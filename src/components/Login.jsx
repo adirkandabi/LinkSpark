@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { cloneElement, useState } from "react";
 import { Link } from "react-router-dom";
+import EmailVerification from "./EmailVerification";
+import HomePage from "./HomePage";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -8,7 +11,13 @@ export default function Login() {
   });
 
   const [errors, setErrors] = useState({});
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState({});
+  const [email, setEmail] = useState("");
+  const [responseError, setResponseError] = useState("Something went wrong.");
+  const [showErrorMsg, setShowErrorMsg] = useState(false);
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -36,53 +45,105 @@ export default function Login() {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      // No errors, proceed with form submission (API call, etc.)
-      alert("Form submitted successfully!");
-      // Reset or do something here
+      setIsLoading(true);
+      setShowErrorMsg(false);
+      axios
+        .post(`${import.meta.env.VITE_API_URL}/auth/login`, formData)
+        .then((res) => {
+          setIsLoading(false);
+
+          console.log(res);
+          setIsVerified(res.data.user.is_verified);
+          setUser(res.data.user);
+          setEmail(res.data.user.email);
+          setLoggedIn(true);
+
+          //   if(res.data.success) {
+        })
+        .catch((res) => {
+          setIsLoading(false);
+          setResponseError(
+            res.response?.data?.error_msg || "Something went wrong."
+          );
+          setShowErrorMsg(true);
+        });
     }
   };
-  return (
-    <div
-      className="d-flex justify-content-center align-items-center  "
-      style={{ height: "600px", width: "100%" }}
-    >
+  return loggedIn ? (
+    !isVerified ? (
+      <EmailVerification user={user} />
+    ) : (
+      <HomePage user={user} />
+    )
+  ) : (
+    <>
       <div
-        className="card shadow p-4"
-        style={{ width: "100%", maxWidth: "400px" }}
+        className="d-flex justify-content-center align-items-center  "
+        style={{ height: "600px", width: "100%" }}
       >
-        <h3 className="mb-4 text-center">Sign In To LinkSpark</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="text"
-              className={`form-control ${errors.username ? "is-invalid" : ""}`}
-              value={formData.username}
-              onChange={handleChange}
-              id="username"
-              placeholder="Username"
-            />
-            <div className="invalid-feedback">{errors.username}</div>
-          </div>
-          <div className="mb-3">
-            <input
-              type="password"
-              className={`form-control ${errors.password ? "is-invalid" : ""}`}
-              value={formData.password}
-              onChange={handleChange}
-              id="password"
-              placeholder="Password"
-            />
-            <div className="invalid-feedback">{errors.password}</div>
-          </div>
-
-          <button type="submit" className="btn btn-primary w-100">
-            Login
-          </button>
-        </form>
-        <p className="mt-3 text-center">
-          Dont have an account? <Link to="/register">Sign Up</Link>
-        </p>
+        <div
+          className="card shadow p-4"
+          style={{ width: "100%", maxWidth: "400px" }}
+        >
+          <h3 className="mb-4 text-center">Sign In To LinkSpark</h3>
+          <form onSubmit={handleSubmit}>
+            {isLoading ? (
+              <div
+                class="d-flex justify-content-center align-items-center h-100"
+                style={{ minHeight: "120px" }}
+              >
+                <div
+                  class="spinner-border text-primary "
+                  role="status"
+                  style={{ width: "50px", height: "50px" }}
+                ></div>
+              </div>
+            ) : (
+              <div className="inputs-wrapper" style={{ minHeight: "120px" }}>
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="username"
+                    className={`form-control ${
+                      errors.username ? "is-invalid" : ""
+                    }`}
+                    value={formData.username}
+                    onChange={handleChange}
+                    id="username"
+                    placeholder="Username"
+                  />
+                  <div className="invalid-feedback">{errors.username}</div>
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="password"
+                    name="password"
+                    className={`form-control ${
+                      errors.password ? "is-invalid" : ""
+                    }`}
+                    value={formData.password}
+                    onChange={handleChange}
+                    id="password"
+                    placeholder="Password"
+                  />
+                  <div className="invalid-feedback">{errors.password}</div>
+                </div>
+              </div>
+            )}
+            {showErrorMsg && (
+              <div className="alert alert-danger" role="alert">
+                {responseError}
+              </div>
+            )}
+            <button type="submit" className="btn btn-primary w-100">
+              Login
+            </button>
+          </form>
+          <p className="mt-3 text-center">
+            Dont have an account? <Link to="/register">Sign Up</Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

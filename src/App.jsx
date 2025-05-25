@@ -10,6 +10,8 @@ import {
 import "./App.css";
 import Login from "./components/login";
 import Register from "./components/Register";
+import EmailVerification from "./components/EmailVerification";
+import HomePage from "./components/HomePage";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/verify" element={<EmailVerification />} />
+        <Route path="/home-page" element={<HomePage />} />
       </Routes>
     </Router>
   );
