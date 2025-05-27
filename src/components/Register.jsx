@@ -22,10 +22,11 @@ export default function Register() {
     phone: "",
     birthday: "",
   });
-  const [registeredEmail, setRegisteredEmail] = useState("");
+
+  const [user, setUser] = useState({});
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState("");
+
   const [errors, setErrors] = useState({});
   const [responseError, setResponseError] = useState("");
   const [showPopupError, setShowPopupError] = useState(false);
@@ -81,8 +82,8 @@ export default function Register() {
           if (res.status === 200 && res.data.user) {
             setIsLoading(false);
             setIsRegistered(true);
-            setRegisteredEmail(res.data.user.email);
-            setUserId(res.data.user.user_id);
+            setUser(res.data.user);
+            Cookies.set("user", user.user_id, { expires: 7 }); // expires in 7 days
             // Clear form data
             setFormData({
               firstName: "",
@@ -105,7 +106,7 @@ export default function Register() {
   };
 
   return isRegistered ? (
-    <EmailVerification email={registeredEmail} userId={userId} />
+    <EmailVerification user={user} />
   ) : (
     <>
       <div className="register-container d-flex justify-content-center align-items-center vh-100 bg-light">

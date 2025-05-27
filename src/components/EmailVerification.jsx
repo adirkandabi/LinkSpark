@@ -8,14 +8,21 @@ function sendVerificationEmail(userId) {
   return axios.post(`${apiUrl}/auth/send-code`, { user_id: userId });
 }
 export default function EmailVerification({ user }) {
-  useEffect(() => {
-    sendVerificationEmail(user.user_id);
-  }, []);
+  const isEmailSent = useRef(false);
+  const navigator = useNavigate();
   const [code, setCode] = useState(Array(6).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("something went wrong");
   const [showErrorMsg, setShowErrorMsg] = useState(false);
   const inputsRef = useRef([]);
+
+  useEffect(() => {
+    if (!isEmailSent.current) {
+      isEmailSent.current = true;
+      sendVerificationEmail(user.user_id);
+    }
+  }, []);
+
   const resetInputs = () => {
     setCode(Array(6).fill("")); // clear state
     inputsRef.current.forEach((input) => {
@@ -52,7 +59,7 @@ export default function EmailVerification({ user }) {
         .then((res) => {
           console.log(res);
           setIsLoading(false);
-          const navigator = useNavigate();
+
           navigator("/home-page", { state: user });
         })
         .catch((res) => {

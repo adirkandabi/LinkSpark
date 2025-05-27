@@ -1,23 +1,29 @@
 import axios from "axios";
-import React, { cloneElement, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { cloneElement, useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import EmailVerification from "./EmailVerification";
 import HomePage from "./HomePage";
+import Cookies from "js-cookie";
 
 export default function Login() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState({});
-  const [email, setEmail] = useState("");
   const [responseError, setResponseError] = useState("Something went wrong.");
   const [showErrorMsg, setShowErrorMsg] = useState(false);
+
+  useEffect(() => {
+    if (loggedIn && isVerified) {
+      navigate("/home-page", { state: user });
+    }
+  }, [loggedIn, isVerified, user]);
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -55,12 +61,12 @@ export default function Login() {
           console.log(res);
           setIsVerified(res.data.user.is_verified);
           setUser(res.data.user);
-          setEmail(res.data.user.email);
           setLoggedIn(true);
-
+          Cookies.set("user", res.data.user.user_id, { expires: 7 }); // expires in 7 days
           //   if(res.data.success) {
         })
         .catch((res) => {
+          console.log(res);
           setIsLoading(false);
           setResponseError(
             res.response?.data?.error_msg || "Something went wrong."
@@ -69,12 +75,8 @@ export default function Login() {
         });
     }
   };
-  return loggedIn ? (
-    !isVerified ? (
-      <EmailVerification user={user} />
-    ) : (
-      <HomePage user={user} />
-    )
+  return loggedIn && !isVerified ? (
+    <EmailVerification user={user} />
   ) : (
     <>
       <div
