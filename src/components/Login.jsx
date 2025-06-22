@@ -20,7 +20,10 @@ export default function Login() {
   const [showErrorMsg, setShowErrorMsg] = useState(false);
 
   useEffect(() => {
-    if (loggedIn && isVerified) {
+    const userIdFromCookie = Cookies.get("user");
+    if (userIdFromCookie) {
+      navigate("/home-page");
+    } else if (loggedIn && isVerified) {
       navigate("/home-page", { state: user });
     }
   }, [loggedIn, isVerified, user]);
@@ -62,7 +65,9 @@ export default function Login() {
           setIsVerified(res.data.user.is_verified);
           setUser(res.data.user);
           setLoggedIn(true);
-          Cookies.set("user", res.data.user.user_id, { expires: 7 }); // expires in 7 days
+          if (res.data.user.is_verified) {
+            Cookies.set("user", res.data.user.user_id, { expires: 7 }); // expires in 7 days
+          }
           //   if(res.data.success) {
         })
         .catch((res) => {

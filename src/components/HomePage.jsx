@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import ChatBox from "./ChatBox";
 async function getUser(userId) {
   try {
     const res = await axios.get(
@@ -46,14 +47,28 @@ export default function HomePage({ user: userProp }) {
   }, [userProp, location.state]);
 
   if (!user) {
-    return <p>Loading user data...</p>; // או spinner
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100vh", width: "100%" }}
+      >
+        <div
+          className="spinner-border text-primary"
+          role="status"
+          style={{ width: "300px", height: "300px" }}
+        ></div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mt-5">
-      <h1>Welcome to the Home Page</h1>
-      <p>Hello, {user.username}!</p>
-      <p>This is a protected route, accessible only after login.</p>
-    </div>
+    <>
+      <div className="container mt-5">
+        <h1>Welcome to the Home Page</h1>
+        <p>Hello, {user.username}!</p>
+        <p>This is a protected route, accessible only after login.</p>
+      </div>
+      {/* <ChatBox /> */}
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import React, { useRef, useState, useEffect } from "react";
-
+import Cookies from "js-cookie";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function sendVerificationEmail(userId) {
@@ -59,8 +59,8 @@ export default function EmailVerification({ user }) {
         .then((res) => {
           console.log(res);
           setIsLoading(false);
-
-          navigator("/home-page", { state: user });
+          Cookies.set("user", user.user_id, { expires: 7 }); // expires in 7 days
+          navigator("/fill-profile");
         })
         .catch((res) => {
           console.log(res);

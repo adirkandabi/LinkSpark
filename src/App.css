@@ -1,3 +1,18 @@
 .register-container {
   padding: 10px;
 }
+.chat-container {
+  position: fixed;
+  bottom: 0;
+  left: 15px;
+}
+.no-focus:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+.spinner-container {
+  display: flex;
+  margin-top: 20vh;
+  justify-content: center;
+  align-items: center !important;
+}

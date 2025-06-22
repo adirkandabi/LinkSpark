@@ -83,7 +83,7 @@ export default function Register() {
             setIsLoading(false);
             setIsRegistered(true);
             setUser(res.data.user);
-            Cookies.set("user", user.user_id, { expires: 7 }); // expires in 7 days
+
             // Clear form data
             setFormData({
               firstName: "",
