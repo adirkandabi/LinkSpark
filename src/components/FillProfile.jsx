@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { createProfile } from "../api/profile";
 
 export default function FillProfile() {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export default function FillProfile() {
 
     try {
       console.log(formData);
-      await axios.post(`${import.meta.env.VITE_API_URL}/profile`, formData);
+      await createProfile(formData);
       setSuccessMessage("Profile updated successfully!");
       setTimeout(() => {
         navigate("/user-profile", { state: { userId: formData.user_id } });
