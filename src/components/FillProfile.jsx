@@ -69,7 +69,7 @@ export default function FillProfile() {
       await createProfile(formData);
       setSuccessMessage("Profile updated successfully!");
       setTimeout(() => {
-        navigate("/user-profile", { state: { userId: formData.user_id } });
+        navigate("/user-profile/" + formData.user_id);
       }, 1000);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -180,7 +180,7 @@ export default function FillProfile() {
             <option value="married">married</option>
             <option value="relationship">In a relationship</option>
             <option value="single">Single</option>
-            <option value="divorceג">Divorced</option>
+            <option value="divorce">Divorced</option>
             <option value="complicated">Its complicated...</option>
           </select>
         </div>

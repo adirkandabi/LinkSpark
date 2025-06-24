@@ -129,11 +129,18 @@ export default function UserProfile() {
                 {data.first_name} {data.last_name}{" "}
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
-                @{data.username} • {data.job_title} @ {data.company}
+                @{data.username}
+                {data.job_title && ` • ${data.job_title}`}
+                {data.company && ` @ ${data.company}`}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {data.location} • {data.bio}
-              </Typography>
+
+              {(data.location || data.bio) && (
+                <Typography variant="body2" color="text.secondary">
+                  {data.location}
+                  {data.location && data.bio && " • "}
+                  {data.bio}
+                </Typography>
+              )}
             </Box>
           </Box>
 
