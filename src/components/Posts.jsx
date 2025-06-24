@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import {
   Box,
   Typography,
@@ -78,7 +79,9 @@ export default function Posts({ user, isHomePage }) {
 
   return (
     <Box>
-      <NewPostSection user={user} onPost={handleNewPost} />
+      {user.user_id === Cookies.get("user") && (
+        <NewPostSection user={user} onPost={handleNewPost} />
+      )}
 
       {isLoading ? (
         <CircularProgress />
@@ -126,15 +129,22 @@ export default function Posts({ user, isHomePage }) {
 
                 {post.author_id === user.user_id && (
                   <Box>
-                    <IconButton onClick={() => handleEdit(post)} size="small">
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => handleDelete(post.post_id)}
-                      size="small"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
+                    {user.user_id === Cookies.get("user") && (
+                      <>
+                        <IconButton
+                          onClick={() => handleEdit(post)}
+                          size="small"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => handleDelete(post.post_id)}
+                          size="small"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    )}
                   </Box>
                 )}
               </Box>
