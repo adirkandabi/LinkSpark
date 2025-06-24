@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import ChatBox from "./ChatBox";
@@ -11,7 +11,11 @@ export default function HomePage({ user: userProp }) {
   const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { userProfile, isLoading, error } = useQuery({
+  const {
+    data: userProfile,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["userHomePage", Cookies.get("user")],
     queryFn: async () => {
       if (!Cookies.get("user")) throw new Error("User ID is required");
@@ -20,31 +24,11 @@ export default function HomePage({ user: userProp }) {
       return res.data.user;
     },
   });
-  // useEffect(() => {
-  //   const userFromNavigation = location.state;
-  //   const userIdFromCookie = Cookies.get("user");
-  //   console.log("userFromNavigation:", userFromNavigation);
-  //   console.log("userIdFromCookie:", userIdFromCookie);
-  //   if (userProp) {
-  //     setUser(userProp);
-  //   } else if (userFromNavigation) {
-  //     setUser(userFromNavigation);
-  //   } else if (userIdFromCookie) {
-  //     // getUser(userIdFromCookie)
-  //     //   .then((fetchedUser) => {
-  //     //     if (fetchedUser) {
-  //     //       setUser(fetchedUser);
-  //     //     } else {
-  //     //       navigate("/login");
-  //     //     }
-  //     //   })
-  //     //   .catch((err) => {
-  //     //     console.log(err);
-  //     //   });
-  //   } else {
-  //     navigate("/login");
-  //   }
-  // }, [userProp, location.state]);
+  useEffect(() => {
+    if (!isLoading && !userProfile) {
+      navigate("/fill-profile");
+    }
+  }, [isLoading, userProfile, navigate]);
 
   if (isLoading) {
     return (
@@ -64,7 +48,7 @@ export default function HomePage({ user: userProp }) {
   return (
     <>
       <div className="container mt-5">
-        <Posts user={userProfile} isHomePage={true} />
+        {userProfile && <Posts user={userProfile} isHomePage={true} />}
       </div>
       {/* <ChatBox /> */}
     </>

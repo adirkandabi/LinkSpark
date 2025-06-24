@@ -6,7 +6,7 @@ export default function Layout({ children }) {
   const location = useLocation();
 
   // Routes where navbar should be hidden
-  const hiddenRoutes = ["/login", "/register", "/verify-code"];
+  const hiddenRoutes = ["/login", "/register", "/verify-code", "/fill-profile"];
   const shouldShowNavbar = !hiddenRoutes.includes(location.pathname);
 
   return (
