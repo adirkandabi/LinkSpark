@@ -209,7 +209,6 @@ export default function FillProfile() {
           >
             {isSubmitting ? "Submitting..." : "Submit Profile"}
           </button>
-          <button className="btn btn-secondary">Skip for now</button>
         </div>
       </form>
     </div>
