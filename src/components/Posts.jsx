@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -18,16 +18,22 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPost, getAllPosts, updatePost, deletePost } from "../api/posts";
 import NewPostSection from "./NewPostSection";
 
-export default function Posts({ user }) {
+export default function Posts({ user, isHomePage }) {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["posts"],
-    queryFn: () => getAllPosts({ author_id: user.user_id }),
+    queryFn: async () =>
+      await getAllPosts({
+        author_id: user.user_id,
+        get_friends_posts: isHomePage,
+      }),
   });
-
+  useEffect(() => {
+    console.log(user);
+  }, []);
   const createMutation = useMutation({
     mutationFn: createPost,
     onSuccess: () => queryClient.invalidateQueries(["posts"]),

@@ -8,7 +8,8 @@ export const createProfile = async (profileData) => {
 };
 
 export const getProfile = async (userId) => {
-  return await axios.get(`${API_URL}/profile/${userId}`);
+  const res = await axios.get(`${API_URL}/profile/${userId}`);
+  return res;
 };
 export const updateProfile = async (profileData) => {
   return await axios.patch(`${API_URL}/profile`, profileData);

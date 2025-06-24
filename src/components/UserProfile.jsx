@@ -100,7 +100,7 @@ export default function UserProfile() {
         profile={data}
         onUpdate={handleProfileUpdate}
       />
-      ;
+
       <Container maxWidth="md" sx={{ mt: 5 }}>
         <Paper
           elevation={3}
@@ -166,7 +166,7 @@ export default function UserProfile() {
             </Grid>
           </Grid>
         </Paper>
-        <Posts user={data} />
+        <Posts user={data} isHomePage={false} />
       </Container>
     </>
   );
