@@ -15,6 +15,7 @@ import HomePage from "./components/HomePage";
 import FillProfile from "./components/FillProfile";
 import UserProfile from "./components/UserProfile";
 import Layout from "./components/Layout";
+import MyGroups from "./components/MyGroups";
 
 function App() {
   return (
@@ -28,6 +29,8 @@ function App() {
           <Route path="/home-page" element={<HomePage />} />
           <Route path="/fill-profile" element={<FillProfile />} />
           <Route path="/user-profile/:user_id" element={<UserProfile />} />
+          <Route path="/my-groups" element={<MyGroups />} />
+
         </Routes>
       </Layout>
     </Router>

@@ -27,7 +27,7 @@ export default function Navbar() {
           >
             Profile
           </Button>
-          <Button color="inherit">My Groups</Button>
+          <Button component={Link} to="/my-groups" color="inherit">My Groups</Button>
         </Box>
 
         {/* Right side: Search input */}
