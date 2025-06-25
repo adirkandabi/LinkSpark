@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import EditProfileModal from "./EditProfileModal";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -15,7 +15,7 @@ import {
   Skeleton,
   Button,
 } from "@mui/material";
-import { useQueryClient } from "@tanstack/react-query";
+import CheckIcon from "@mui/icons-material/Check";
 import EditIcon from "@mui/icons-material/Edit";
 import Posts from "./Posts";
 import { getProfile } from "../api/profile";
@@ -24,25 +24,69 @@ export default function UserProfile() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const { user_id } = useParams();
   const navigate = useNavigate();
-  const isPersonal = user_id === Cookies.get("user");
   const queryClient = useQueryClient();
+  const currentUserId = Cookies.get("user");
+  const isPersonal = user_id === currentUserId;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["userProfile", user_id],
     queryFn: async () => {
       if (!user_id) throw new Error("User ID is required");
       const res = await getProfile(user_id);
-
       return res.data.user;
     },
   });
+
   const handleProfileUpdate = (updatedData) => {
     queryClient.setQueryData(["userProfile", user_id], (prev) => ({
       ...prev,
       ...updatedData,
     }));
   };
-  if (isLoading)
+
+  const sendFriendRequest = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/send-friend-request`,
+        { friend_id: data.user_id, user_id: currentUserId }
+      );
+      queryClient.invalidateQueries(["userProfile", user_id]);
+    } catch (err) {
+      console.error("Failed to send request", err);
+    }
+  };
+
+  const acceptFriendRequest = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/accept-friend-request`,
+        {
+          friend_id: data.user_id,
+          user_id: currentUserId,
+        }
+      );
+      queryClient.invalidateQueries(["userProfile", user_id]);
+    } catch (err) {
+      console.error("Failed to accept request", err);
+    }
+  };
+
+  const denyFriendRequest = async () => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/reject-friend-request`,
+        {
+          friend_id: data.user_id,
+          user_id: currentUserId,
+        }
+      );
+      queryClient.invalidateQueries(["userProfile", user_id]);
+    } catch (err) {
+      console.error("Failed to deny request", err);
+    }
+  };
+
+  if (isLoading) {
     return (
       <Container maxWidth="md" sx={{ mt: 5 }}>
         <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
@@ -66,8 +110,9 @@ export default function UserProfile() {
         </Paper>
       </Container>
     );
+  }
 
-  if (error)
+  if (error) {
     return (
       <Container maxWidth="sm" sx={{ mt: 8 }}>
         <Paper
@@ -91,6 +136,18 @@ export default function UserProfile() {
         </Paper>
       </Container>
     );
+  }
+
+  const isFriend = data.friends?.some(
+    (friend) => friend.user_id === currentUserId
+  );
+  const requestSent = data.requests_recieved?.some(
+    (req) => req.user_id === currentUserId
+  );
+  const requestReceived = data.requests_sent?.some(
+    (req) => req.user_id === currentUserId
+  );
+
   return (
     <>
       <EditProfileModal
@@ -106,7 +163,7 @@ export default function UserProfile() {
           elevation={3}
           sx={{ p: 4, borderRadius: 3, position: "relative" }}
         >
-          {isPersonal && (
+          {isPersonal ? (
             <Button
               variant="outlined"
               startIcon={<EditIcon />}
@@ -115,6 +172,62 @@ export default function UserProfile() {
               onClick={() => setIsEditOpen(true)}
             >
               Edit Profile
+            </Button>
+          ) : isFriend ? (
+            <Button
+              variant="contained"
+              color="success"
+              size="small"
+              startIcon={<CheckIcon />}
+              disabled
+              sx={{ position: "absolute", top: 16, right: 16 }}
+            >
+              Friends
+            </Button>
+          ) : requestSent ? (
+            <Button
+              variant="outlined"
+              size="small"
+              disabled
+              sx={{ position: "absolute", top: 16, right: 16 }}
+            >
+              Request Sent
+            </Button>
+          ) : requestReceived ? (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                display: "flex",
+                gap: 1,
+              }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                color="primary"
+                onClick={acceptFriendRequest}
+              >
+                Accept
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                onClick={denyFriendRequest}
+              >
+                Deny
+              </Button>
+            </Box>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={sendFriendRequest}
+              sx={{ position: "absolute", top: 16, right: 16 }}
+            >
+              Add Friend
             </Button>
           )}
 
@@ -126,14 +239,13 @@ export default function UserProfile() {
             />
             <Box>
               <Typography variant="h4" fontWeight="bold">
-                {data.first_name} {data.last_name}{" "}
+                {data.first_name} {data.last_name}
               </Typography>
               <Typography variant="subtitle1" color="text.secondary">
                 @{data.username}
                 {data.job_title && ` • ${data.job_title}`}
                 {data.company && ` @ ${data.company}`}
               </Typography>
-
               {(data.location || data.bio) && (
                 <Typography variant="body2" color="text.secondary">
                   {data.location}
@@ -173,6 +285,7 @@ export default function UserProfile() {
             </Grid>
           </Grid>
         </Paper>
+
         <Posts user={data} isHomePage={false} />
       </Container>
     </>
