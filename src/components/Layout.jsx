@@ -2,6 +2,9 @@
 import { useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 
+import Messenger from "./Messenger";
+import ChatLauncher from "./ChatLauncher";
+
 export default function Layout({ children }) {
   const location = useLocation();
 
@@ -11,7 +14,12 @@ export default function Layout({ children }) {
 
   return (
     <>
-      {shouldShowNavbar && <Navbar />}
+      {shouldShowNavbar && (
+        <>
+          <Navbar />
+          <ChatLauncher />
+        </>
+      )}
       <main>{children}</main>
     </>
   );

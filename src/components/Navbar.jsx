@@ -21,22 +21,65 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
-  const [friendRequests, setFriendRequests] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const searchBoxRef = useRef(null);
   const notificationRef = useRef(null);
   const currentUserId = Cookies.get("user");
+  const queryClient = useQueryClient();
+
+  const { data: friendRequests = [], refetch } = useQuery({
+    queryKey: ["friendRequests", currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return [];
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/user/${currentUserId}/requests`
+      );
+      return res.data.requests || [];
+    },
+    enabled: !!currentUserId,
+  });
 
   const handleLogout = () => {
     Cookies.remove("user");
     navigate("/login");
+  };
+
+  const handleAccept = async (userId) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/accept-friend-request`,
+        {
+          friend_id: userId,
+          user_id: currentUserId,
+        }
+      );
+      queryClient.invalidateQueries(["friendRequests", currentUserId]);
+    } catch (err) {
+      console.error("Failed to accept request", err);
+    }
+  };
+
+  const handleDeny = async (userId) => {
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/reject-friend-request`,
+        {
+          friend_id: userId,
+          user_id: currentUserId,
+        }
+      );
+      queryClient.invalidateQueries(["friendRequests", currentUserId]);
+    } catch (err) {
+      console.error("Failed to deny request", err);
+    }
   };
 
   useEffect(() => {
@@ -64,53 +107,6 @@ export default function Navbar() {
 
     return () => clearTimeout(delayDebounce);
   }, [searchTerm]);
-
-  useEffect(() => {
-    const fetchRequests = async () => {
-      if (currentUserId) {
-        try {
-          const res = await axios.get(
-            `${import.meta.env.VITE_API_URL}/user/${currentUserId}/requests`
-          );
-          setFriendRequests(res.data.requests || []);
-        } catch (err) {
-          console.error("Failed to fetch friend requests", err);
-        }
-      }
-    };
-
-    fetchRequests();
-  }, [currentUserId]);
-
-  const handleAccept = async (userId) => {
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/accept-friend-request`,
-        {
-          friend_id: userId,
-          user_id: currentUserId,
-        }
-      );
-      setFriendRequests((prev) => prev.filter((r) => r.user_id !== userId));
-    } catch (err) {
-      console.error("Failed to accept request", err);
-    }
-  };
-
-  const handleDeny = async (userId) => {
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/reject-friend-request`,
-        {
-          friend_id: userId,
-          user_id: currentUserId,
-        }
-      );
-      setFriendRequests((prev) => prev.filter((r) => r.user_id !== userId));
-    } catch (err) {
-      console.error("Failed to deny request", err);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
