@@ -1,86 +1,141 @@
 import React, { useState, useRef, useEffect } from "react";
+import Cookies from "js-cookie";
 import { io } from "socket.io-client";
+import axios from "axios";
 
+// Create socket instance once
 const socket = io(import.meta.env.VITE_API_URL);
 
-export default function ChatBox() {
+export default function ChatBox({ user }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  const currentUserId = Cookies.get("user");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+  const roomId = [currentUserId, user.user_id].sort().join("_");
 
-    const message = { text: input, sender: "me" };
-    setMessages((prev) => [...prev, message]);
-    socket.emit("send_message", { text: input });
-    setInput("");
-  };
-
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessages((prev) => [...prev, { text: data.text, sender: "other" }]);
-    });
-
-    return () => {
-      socket.off("receive_message");
-    };
-  }, []);
-
+  // Scroll to bottom on message update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Load chat history and join room
+  useEffect(() => {
+    if (!roomId) return;
+
+    setMessages([]); // Reset messages when switching user
+    socket.emit("join_room", roomId);
+
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/messages/${roomId}`)
+      .then((res) => {
+        const formatted = res.data.messages.map((m) => ({
+          text: m.text,
+          sender: m.sender === currentUserId ? "me" : "other",
+        }));
+        setMessages(formatted);
+      })
+      .catch(console.error);
+
+    socket.emit("mark_as_read", { room: roomId, receiver: currentUserId });
+
+    return () => {
+      socket.emit("leave_room", roomId);
+    };
+  }, [user?.user_id, currentUserId]);
+
+  // Handle incoming messages
+  useEffect(() => {
+    const handleReceive = (data) => {
+      if (data.room === roomId && data.sender !== currentUserId) {
+        setMessages((prev) => [...prev, { text: data.text, sender: "other" }]);
+      }
+    };
+
+    socket.on("receive_message", handleReceive);
+
+    return () => {
+      socket.off("receive_message", handleReceive);
+    };
+  }, [roomId, currentUserId]);
+
+  // Handle message submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const newMessage = {
+      text: input,
+      sender: currentUserId,
+      receiver: user.user_id,
+      room: roomId,
+    };
+
+    setMessages((prev) => [...prev, { text: input, sender: "me" }]);
+    setInput("");
+    socket.emit("send_message", newMessage);
+  };
+
   return (
-    <div className="chat-container">
+    <div
+      className="d-flex flex-column"
+      style={{
+        height: "100%",
+        width: "100%",
+        borderLeft: "1px solid #ccc",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <div className="bg-dark text-white px-3 py-2">
+        <strong>Chat with {user?.first_name || "..."}</strong>
+      </div>
+
+      {/* Message Area */}
       <div
-        className="card shadow-sm"
-        style={{ maxWidth: "600px", margin: "auto", height: "600px" }}
+        className="flex-grow-1 px-3 py-2 overflow-auto"
+        style={{ backgroundColor: "#f8f9fa" }}
       >
-        <div className="card-header bg-dark text-white">
-          <strong>User Chat</strong>
-        </div>
-        <div
-          className="card-body d-flex flex-column overflow-auto"
-          style={{ height: "450px" }}
-        >
-          {messages.map((msg, idx) => (
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`mb-2 d-flex ${
+              msg.sender === "me"
+                ? "justify-content-end"
+                : "justify-content-start"
+            }`}
+          >
             <div
-              key={idx}
-              className={`mb-2 ${
-                msg.sender === "me" ? "text-end" : "text-start"
+              className={`p-2 rounded ${
+                msg.sender === "me"
+                  ? "bg-primary text-white"
+                  : "bg-light border"
               }`}
+              style={{ maxWidth: "75%", wordBreak: "break-word" }}
             >
-              <div
-                className={`rounded p-2 d-inline-block ${
-                  msg.sender === "me" ? "bg-primary text-white" : "bg-light"
-                }
-                `}
-              >
-                {msg.text}
-              </div>
+              {msg.text}
             </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-        <div className="card-footer">
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control no-focus"
-                placeholder="Type a message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                required
-              />
-              <button className="btn btn-primary" type="submit">
-                Send
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="border-top bg-white p-2">
+        <form onSubmit={handleSubmit}>
+          <div className="input-group">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type a message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button className="btn btn-primary" type="submit">
+              Send
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

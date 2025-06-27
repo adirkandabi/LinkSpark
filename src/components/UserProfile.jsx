@@ -66,6 +66,7 @@ export default function UserProfile() {
         }
       );
       queryClient.invalidateQueries(["userProfile", user_id]);
+      queryClient.invalidateQueries(["friendRequests", currentUserId]);
     } catch (err) {
       console.error("Failed to accept request", err);
     }
@@ -81,6 +82,7 @@ export default function UserProfile() {
         }
       );
       queryClient.invalidateQueries(["userProfile", user_id]);
+      queryClient.invalidateQueries(["friendRequests", currentUserId]);
     } catch (err) {
       console.error("Failed to deny request", err);
     }
@@ -225,7 +227,13 @@ export default function UserProfile() {
               variant="outlined"
               size="small"
               onClick={sendFriendRequest}
-              sx={{ position: "absolute", top: 16, right: 16 }}
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                color: "#00C000",
+                borderColor: "#00C000",
+              }}
             >
               Add Friend
             </Button>
