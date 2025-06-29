@@ -75,6 +75,15 @@ export default function FriendList({ onSelectUser }) {
             color="error"
             variant={unreadMap[f.user_id] > 0 ? "dot" : "standard"}
             invisible={!unreadMap[f.user_id]}
+            sx={{
+              "& .MuiBadge-badge": {
+                width: 20,
+                height: 20,
+                minWidth: 14,
+                borderRadius: "50%",
+                border: "2px solid white",
+              },
+            }}
           >
             <Avatar src={f.profile_image}>{f.first_name?.[0]}</Avatar>
           </Badge>

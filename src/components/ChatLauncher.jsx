@@ -64,6 +64,15 @@ export default function ChatLauncher() {
           variant="dot"
           invisible={!hasUnread || open}
           overlap="circular"
+          sx={{
+            "& .MuiBadge-badge": {
+              width: 20,
+              height: 20,
+              minWidth: 14,
+              borderRadius: "50%",
+              border: "2px solid white",
+            },
+          }}
         >
           <IconButton
             onClick={() => setOpen((prev) => !prev)}
