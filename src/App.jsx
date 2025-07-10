@@ -17,6 +17,7 @@ import UserProfile from "./components/UserProfile";
 import Layout from "./components/Layout";
 
 import MyGroups from "./components/MyGroups";
+import GroupDetails from "./components/GroupDetails";
 
 import RequireAuth from "./components/RequireAuth"; // ✅ import auth wrapper
 
@@ -42,11 +43,11 @@ function App() {
               </RequireAuth>
             }
           />
-              <Route path="/my-groups" element={
-              <RequireAuth>
-                <MyGroups />
-              </RequireAuth>
-            } />
+          <Route path="/my-groups" element={
+            <RequireAuth>
+              <MyGroups />
+            </RequireAuth>
+          } />
           <Route
             path="verify"
             element={
@@ -71,6 +72,8 @@ function App() {
               </RequireAuth>
             }
           />
+          <Route path="/groups/:id" element={<GroupDetails />} />
+
         </Routes>
       </Layout>
     </Router>
