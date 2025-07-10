@@ -13,14 +13,29 @@ import GroupIcon from "@mui/icons-material/Group";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { useNavigate } from "react-router-dom";
 
 export default function GroupCard({ group, userId, onEdit, onDelete }) {
+    const navigate = useNavigate();
     const isOwner = group.owner_id === userId;
     const createdAt = new Date(group.created_at).toLocaleDateString();
     const membersCount = group.members?.length || 0;
 
+    const handleClick = () => {
+        console.log("Group object:", group);
+        navigate(`/groups/${group.group_id}`);
+    };
+
+    // כדי למנוע פתיחת הקלף בלחיצה על כפתורי Edit/Delete
+    const stopPropagation = (e) => {
+        e.stopPropagation();
+    };
+
     return (
-        <Card sx={{ p: 2, borderRadius: 3, boxShadow: 3 }}>
+        <Card
+            sx={{ p: 2, borderRadius: 3, boxShadow: 3, cursor: "pointer" }}
+            onClick={handleClick}
+        >
             <CardContent>
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                     <Avatar>
@@ -38,10 +53,18 @@ export default function GroupCard({ group, userId, onEdit, onDelete }) {
                     <Box display="flex" gap={1} flexWrap="wrap">
                         {isOwner && (
                             <Tooltip title="You are the owner">
-                                <Chip icon={<AdminPanelSettingsIcon />} label="Owner" color="primary" />
+                                <Chip
+                                    icon={<AdminPanelSettingsIcon />}
+                                    label="Owner"
+                                    color="primary"
+                                />
                             </Tooltip>
                         )}
-                        <Chip label={`Members: ${membersCount}`} size="small" />
+                        <Chip
+                            icon={<GroupIcon />}
+                            label={`Members: ${membersCount}`}
+                            size="small"
+                        />
                         <Chip label={`Created: ${createdAt}`} size="small" />
                     </Box>
 
@@ -51,7 +74,10 @@ export default function GroupCard({ group, userId, onEdit, onDelete }) {
                                 variant="outlined"
                                 size="small"
                                 startIcon={<EditIcon />}
-                                onClick={() => onEdit(group)}
+                                onClick={(e) => {
+                                    stopPropagation(e);
+                                    onEdit(group);
+                                }}
                             >
                                 Edit
                             </Button>
@@ -60,7 +86,10 @@ export default function GroupCard({ group, userId, onEdit, onDelete }) {
                                 size="small"
                                 color="error"
                                 startIcon={<DeleteIcon />}
-                                onClick={() => onDelete(group.group_id)}
+                                onClick={(e) => {
+                                    stopPropagation(e);
+                                    onDelete(group.group_id);
+                                }}
                             >
                                 Delete
                             </Button>
