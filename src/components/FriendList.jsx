@@ -13,7 +13,7 @@ export default function FriendList({ onSelectUser }) {
       try {
         const [friendsRes, unreadRes] = await Promise.all([
           axios.get(
-            `${import.meta.env.VITE_API_URL}/user/${currentUserId}/friends`
+            `${import.meta.env.VITE_API_URL}/users/${currentUserId}/friends`
           ),
           axios.get(
             `${import.meta.env.VITE_API_URL}/messages/unread/${currentUserId}`

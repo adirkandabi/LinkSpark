@@ -47,7 +47,7 @@ export default function UserProfile() {
   const sendFriendRequest = async () => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/send-friend-request`,
+        `${import.meta.env.VITE_API_URL}/users/send-friend-request`,
         { friend_id: data.user_id, user_id: currentUserId }
       );
       queryClient.invalidateQueries(["userProfile", user_id]);
@@ -59,7 +59,7 @@ export default function UserProfile() {
   const acceptFriendRequest = async () => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/accept-friend-request`,
+        `${import.meta.env.VITE_API_URL}/users/accept-friend-request`,
         {
           friend_id: data.user_id,
           user_id: currentUserId,
@@ -75,7 +75,7 @@ export default function UserProfile() {
   const denyFriendRequest = async () => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/reject-friend-request`,
+        `${import.meta.env.VITE_API_URL}/users/reject-friend-request`,
         {
           friend_id: data.user_id,
           user_id: currentUserId,
@@ -292,6 +292,48 @@ export default function UserProfile() {
               <Typography>{data.relationship_status}</Typography>
             </Grid>
           </Grid>
+          {data.friends && data.friends.length > 0 && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                👥 Friends ({data.friends.length})
+              </Typography>
+              <Grid container spacing={2}>
+                {data.friends.map((friend) => (
+                  <Grid item xs={12} sm={6} md={4} key={friend.user_id}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        cursor: "pointer",
+                        transition: "0.3s",
+                        "&:hover": { backgroundColor: "#f5f5f5" },
+                      }}
+                      onClick={() => navigate(`/user-profile/${friend.user_id}`)}
+                    >
+                      <Avatar
+                        src={friend.profile_image}
+                        alt={friend.first_name}
+                        sx={{ width: 50, height: 50 }}
+                      />
+                      <Box>
+                        <Typography fontWeight="bold">
+                          {friend.first_name} {friend.last_name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          @{friend.username}
+                        </Typography>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </>
+          )}
         </Paper>
 
         <Posts user={data} isHomePage={false} />
