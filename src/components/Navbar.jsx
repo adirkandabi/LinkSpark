@@ -40,7 +40,7 @@ export default function Navbar() {
     queryFn: async () => {
       if (!currentUserId) return [];
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/user/${currentUserId}/requests`
+        `${import.meta.env.VITE_API_URL}/users/${currentUserId}/requests`
       );
       return res.data.requests || [];
     },
@@ -55,7 +55,7 @@ export default function Navbar() {
   const handleAccept = async (userId) => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/accept-friend-request`,
+        `${import.meta.env.VITE_API_URL}/users/accept-friend-request`,
         {
           friend_id: userId,
           user_id: currentUserId,
@@ -70,7 +70,7 @@ export default function Navbar() {
   const handleDeny = async (userId) => {
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/reject-friend-request`,
+        `${import.meta.env.VITE_API_URL}/users/reject-friend-request`,
         {
           friend_id: userId,
           user_id: currentUserId,
@@ -87,7 +87,7 @@ export default function Navbar() {
       if (searchTerm.trim()) {
         axios
           .get(
-            `${import.meta.env.VITE_API_URL}/user/list?q=${encodeURIComponent(
+            `${import.meta.env.VITE_API_URL}/users/list?q=${encodeURIComponent(
               searchTerm
             )}`
           )
@@ -142,7 +142,7 @@ export default function Navbar() {
             Profile
           </Button>
           <Button component={Link} to="/my-groups" color="inherit">
-            My Groups
+            Groups
           </Button>
         </Box>
 

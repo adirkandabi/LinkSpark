@@ -12,7 +12,7 @@ import {
     DialogTitle,
     Typography,
 } from "@mui/material";
-import GroupCard from "./GroupCard"; // ✅ קומפוננטה חדשה
+import GroupCard from "./GroupCard";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -40,7 +40,7 @@ export default function MyGroups() {
 
     const fetchGroups = async () => {
         try {
-            const res = await axios.get(`${apiUrl}/groups/user/${userId}`);
+            const res = await axios.get(`${apiUrl}/groups`);
             setGroups(res.data);
         } catch (err) {
             console.error("Failed to fetch groups", err);
@@ -73,10 +73,8 @@ export default function MyGroups() {
             };
 
             if (editGroup) {
-                // עריכת קבוצה קיימת
                 await axios.put(`${apiUrl}/groups/${editGroup.group_id}`, groupData);
             } else {
-                // יצירת קבוצה חדשה
                 await axios.post(`${apiUrl}/groups`, groupData);
             }
 
@@ -90,11 +88,8 @@ export default function MyGroups() {
         }
     };
 
-
     const handleDelete = async (groupId) => {
-        const confirm = window.confirm(
-            "Are you sure you want to delete this group?"
-        );
+        const confirm = window.confirm("Are you sure you want to delete this group?");
         if (!confirm) return;
 
         try {
@@ -108,7 +103,7 @@ export default function MyGroups() {
     return (
         <Box p={3}>
             <Typography variant="h4" gutterBottom>
-                My Groups
+                Groups
             </Typography>
 
             <Box display="flex" justifyContent="space-between" mb={2}>
@@ -131,6 +126,7 @@ export default function MyGroups() {
                             userId={userId}
                             onEdit={handleOpen}
                             onDelete={handleDelete}
+                            onJoin={fetchGroups} // ✅ נוספה תמיכה בהצטרפות
                         />
                     </Grid>
                 ))}
