@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-// Create socket instance once
 const socket = io(import.meta.env.VITE_API_URL);
 
 export default function ChatBox({ user }) {
@@ -11,19 +10,16 @@ export default function ChatBox({ user }) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
   const currentUserId = Cookies.get("user");
-
   const roomId = [currentUserId, user.user_id].sort().join("_");
 
-  // Scroll to bottom on message update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load chat history and join room
   useEffect(() => {
     if (!roomId) return;
 
-    setMessages([]); // Reset messages when switching user
+    setMessages([]);
     socket.emit("join_room", roomId);
 
     axios
@@ -39,12 +35,14 @@ export default function ChatBox({ user }) {
 
     socket.emit("mark_as_read", { room: roomId, receiver: currentUserId });
 
+    // 🔔 Tell server to refresh unread count
+    socket.emit("refresh_unread", currentUserId);
+
     return () => {
       socket.emit("leave_room", roomId);
     };
   }, [user?.user_id, currentUserId]);
 
-  // Handle incoming messages
   useEffect(() => {
     const handleReceive = (data) => {
       if (data.room === roomId && data.sender !== currentUserId) {
@@ -53,13 +51,9 @@ export default function ChatBox({ user }) {
     };
 
     socket.on("receive_message", handleReceive);
-
-    return () => {
-      socket.off("receive_message", handleReceive);
-    };
+    return () => socket.off("receive_message", handleReceive);
   }, [roomId, currentUserId]);
 
-  // Handle message submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -86,12 +80,10 @@ export default function ChatBox({ user }) {
         overflow: "hidden",
       }}
     >
-      {/* Header */}
       <div className="bg-dark text-white px-3 py-2">
         <strong>Chat with {user?.first_name || "..."}</strong>
       </div>
 
-      {/* Message Area */}
       <div
         className="flex-grow-1 px-3 py-2 overflow-auto"
         style={{ backgroundColor: "#f8f9fa" }}
@@ -120,7 +112,6 @@ export default function ChatBox({ user }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-top bg-white p-2">
         <form onSubmit={handleSubmit}>
           <div className="input-group">

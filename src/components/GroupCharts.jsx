@@ -9,7 +9,7 @@ export default function GroupCharts({ posts, authors }) {
   useEffect(() => {
     drawBarChart();
     drawLineChart();
-  }, [posts]);
+  }, [posts, authors]);
 
   const drawBarChart = () => {
     const counts = {};
@@ -27,7 +27,7 @@ export default function GroupCharts({ posts, authors }) {
     const height = 250;
     const margin = { top: 20, right: 20, bottom: 50, left: 40 };
 
-    d3.select(barRef.current).selectAll("*").remove(); // reset
+    d3.select(barRef.current).selectAll("*").remove();
     const svg = d3
       .select(barRef.current)
       .attr("width", width)
@@ -41,7 +41,7 @@ export default function GroupCharts({ posts, authors }) {
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.count)])
+      .domain([0, d3.max(data, (d) => d.count) || 1])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
@@ -70,40 +70,66 @@ export default function GroupCharts({ posts, authors }) {
   };
 
   const drawLineChart = () => {
-    const groupedByDate = {};
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 6);
+
+    // Init date map with 0s
+    const dateCounts = {};
+    const dateLabels = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekAgo);
+      d.setDate(d.getDate() + i);
+      const label = d.toLocaleDateString("he-IL", {
+        day: "2-digit",
+        month: "2-digit",
+      }); // dd/mm
+      dateLabels.push(label);
+      dateCounts[label] = 0;
+    }
+
+    // Count posts per day
     posts.forEach((p) => {
-      const date = new Date(p.created_at).toLocaleDateString();
-      groupedByDate[date] = (groupedByDate[date] || 0) + 1;
+      const d = new Date(p.created_at);
+      const dateLabel = d.toLocaleDateString("he-IL", {
+        day: "2-digit",
+        month: "2-digit",
+      });
+      if (dateCounts.hasOwnProperty(dateLabel)) {
+        dateCounts[dateLabel]++;
+      }
     });
 
-    const data = Object.entries(groupedByDate)
-      .map(([date, count]) => ({ date: new Date(date), count }))
-      .sort((a, b) => a.date - b.date);
+    const data = dateLabels.map((label) => ({
+      date: label,
+      count: dateCounts[label],
+    }));
 
     const width = 400;
     const height = 250;
     const margin = { top: 20, right: 20, bottom: 50, left: 40 };
 
-    d3.select(lineRef.current).selectAll("*").remove(); // reset
+    d3.select(lineRef.current).selectAll("*").remove();
     const svg = d3
       .select(lineRef.current)
       .attr("width", width)
       .attr("height", height);
 
     const x = d3
-      .scaleTime()
-      .domain(d3.extent(data, (d) => d.date))
-      .range([margin.left, width - margin.right]);
+      .scaleBand()
+      .domain(data.map((d) => d.date))
+      .range([margin.left, width - margin.right])
+      .padding(0.1);
 
     const y = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d) => d.count)])
+      .domain([0, d3.max(data, (d) => d.count) || 1])
       .nice()
       .range([height - margin.bottom, margin.top]);
 
     const line = d3
       .line()
-      .x((d) => x(d.date))
+      .x((d) => x(d.date) + x.bandwidth() / 2)
       .y((d) => y(d.count));
 
     svg
@@ -117,7 +143,7 @@ export default function GroupCharts({ posts, authors }) {
     svg
       .append("g")
       .attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%d/%m")));
+      .call(d3.axisBottom(x));
 
     svg
       .append("g")
@@ -126,17 +152,15 @@ export default function GroupCharts({ posts, authors }) {
   };
 
   return (
-    <div>
-      <Box display="flex" gap={4} flexWrap="wrap">
-        <Box>
-          <h4>Posts per user 📊</h4>
-          <svg ref={barRef} />
-        </Box>
-        <Box>
-          <h4>Post per day 📈</h4>
-          <svg ref={lineRef} />
-        </Box>
+    <Box display="flex" justifyContent="center" gap={4} flexWrap="wrap">
+      <Box>
+        <h4>Posts per user 📊</h4>
+        <svg ref={barRef} />
       </Box>
-    </div>
+      <Box>
+        <h4>Post per day 📈</h4>
+        <svg ref={lineRef} />
+      </Box>
+    </Box>
   );
 }
