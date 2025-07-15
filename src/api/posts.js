@@ -10,7 +10,6 @@ export const createPost = async (postData) => {
 export const getAllPosts = async (filters = {}) => {
   const res = await axios.get(`${BASE_URL}/posts`, { params: filters });
   console.log(res);
-
   return res.data;
 };
 

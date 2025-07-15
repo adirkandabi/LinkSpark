@@ -125,6 +125,23 @@ export default function Posts({ user, isHomePage }) {
                       ? `Edited: ${new Date(post.updated_at).toLocaleString()}`
                       : new Date(post.created_at).toLocaleString()}
                   </Typography>
+                  {post.group_name && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 600,
+                        color: "white",
+                        backgroundColor: "primary.light",
+                        px: 1,
+                        py: 0.3,
+                        borderRadius: 1,
+                        display: "inline-block",
+                        mt: 0.5,
+                      }}
+                    >
+                      📌 In {post.group_name}
+                    </Typography>
+                  )}
                 </Box>
 
                 {post.author_id === user.user_id && (

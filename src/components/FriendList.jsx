@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { Avatar, Box, Typography, Badge } from "@mui/material";
+import { io } from "socket.io-client";
+
+const socket = io(import.meta.env.VITE_API_URL);
 
 export default function FriendList({ onSelectUser }) {
   const [friends, setFriends] = useState([]);
@@ -9,6 +12,8 @@ export default function FriendList({ onSelectUser }) {
   const currentUserId = Cookies.get("user");
 
   useEffect(() => {
+    socket.emit("join_room", currentUserId); // join personal room
+
     const fetchData = async () => {
       try {
         const [friendsRes, unreadRes] = await Promise.all([
@@ -23,7 +28,6 @@ export default function FriendList({ onSelectUser }) {
         const friends = friendsRes.data.friends || [];
         const unreadList = unreadRes.data.unread || [];
 
-        // Map sender_id to count
         const unreadCountMap = {};
         unreadList.forEach(({ user_id, unread_count }) => {
           unreadCountMap[user_id] = unread_count;
@@ -37,6 +41,27 @@ export default function FriendList({ onSelectUser }) {
     };
 
     fetchData();
+
+    // Listen to unread updates
+    const handleUnread = (count) => {
+      // Re-fetch unread counts
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/messages/unread/${currentUserId}`)
+        .then((res) => {
+          const updatedMap = {};
+          (res.data.unread || []).forEach(({ user_id, unread_count }) => {
+            updatedMap[user_id] = unread_count;
+          });
+          setUnreadMap(updatedMap);
+        });
+    };
+
+    socket.on("unread_count", handleUnread);
+
+    return () => {
+      socket.off("unread_count", handleUnread);
+      socket.emit("leave_room", currentUserId);
+    };
   }, [currentUserId]);
 
   return (
