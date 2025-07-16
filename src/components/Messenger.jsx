@@ -9,7 +9,7 @@ export default function Messenger() {
     <div
       style={{
         display: "flex",
-        height: "500px", // or 100% if it's inside a floating window
+        height: "500px",
         width: "100%",
         maxWidth: "800px",
         borderRadius: "8px",

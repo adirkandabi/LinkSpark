@@ -133,7 +133,7 @@ export default function GroupDetails() {
   return (
     <Box p={4}>
       <Button variant="outlined" onClick={() => navigate("/my-groups")}>
-        ← חזרה לקבוצות
+        ← back to groups
       </Button>
 
       <Typography variant="h4" mt={2}>
@@ -143,13 +143,13 @@ export default function GroupDetails() {
 
       <Box mt={2} mb={2}>
         <Typography>
-          👥 חברים: {group.members.length}{" "}
+          👥 friends: {group.members.length}{" "}
           <Button size="small" onClick={() => setMembersDialogOpen(true)}>
-            הצג
+            present
           </Button>
         </Typography>
         <Typography>
-          📅 תאריך פתיחה: {new Date(group.created_at).toLocaleDateString()}
+          📅 opening date {new Date(group.created_at).toLocaleDateString()}
         </Typography>
         {group.image_url && (
           <Box mt={2}>
@@ -168,7 +168,7 @@ export default function GroupDetails() {
         fullWidth
         multiline
         minRows={3}
-        label="כתוב פוסט..."
+        label="write a new post..."
         value={newPost}
         onChange={(e) => setNewPost(e.target.value)}
       />
@@ -177,10 +177,10 @@ export default function GroupDetails() {
       </Button>
 
       <Divider sx={{ my: 3 }} />
-      <Typography variant="h6">פוסטים</Typography>
+      <Typography variant="h6">posts</Typography>
 
       {posts.length === 0 && (
-        <Typography color="text.secondary">אין פוסטים עדיין בקבוצה.</Typography>
+        <Typography color="text.secondary">group has no posts yet</Typography>
       )}
 
       {posts.map((post) => (
@@ -188,7 +188,7 @@ export default function GroupDetails() {
           <Box display="flex" alignItems="center" mb={1}>
             <Avatar sx={{ width: 32, height: 32, mr: 1 }} />
             <Typography fontWeight="bold">
-              {authors[post.author_id] || "משתמש"}
+              {authors[post.author_id] || "user"}
             </Typography>
           </Box>
           {editingPost?.post_id === post.post_id ? (
@@ -225,26 +225,26 @@ export default function GroupDetails() {
                   setEditContent(post.content);
                 }}
               >
-                ערוך
+                edit
               </Button>
               <Button
                 size="small"
                 color="error"
                 onClick={() => handleDelete(post.post_id)}
               >
-                מחק
+                delete
               </Button>
             </Box>
           )}
         </Paper>
       ))}
 
-      {/* Dialog להצגת חברי הקבוצה */}
+      {/* Dialog to shoe group members*/}
       <Dialog
         open={membersDialogOpen}
         onClose={() => setMembersDialogOpen(false)}
       >
-        <DialogTitle>חברי הקבוצה</DialogTitle>
+        <DialogTitle>group members</DialogTitle>
         <DialogContent>
           <List>
             {groupMembers.map((member) => (

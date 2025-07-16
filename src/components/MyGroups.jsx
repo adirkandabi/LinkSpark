@@ -126,7 +126,7 @@ export default function MyGroups() {
                             userId={userId}
                             onEdit={handleOpen}
                             onDelete={handleDelete}
-                            onJoin={fetchGroups} // ✅ נוספה תמיכה בהצטרפות
+                            onJoin={fetchGroups}
                         />
                     </Grid>
                 ))}

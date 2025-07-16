@@ -50,7 +50,6 @@ export default function HomePage({ user: userProp }) {
       <div className="container mt-5">
         {userProfile && <Posts user={userProfile} isHomePage={true} />}
       </div>
-      {/* <ChatBox /> */}
     </>
   );
 }

@@ -69,9 +69,6 @@ export default function EmailVerification({ user }) {
           setShowErrorMsg(true);
         });
     }
-    // if (!value && index > 0) {
-    //   inputsRef.current[index - 1]?.focus();
-    // }
   };
 
   return (
@@ -97,7 +94,6 @@ export default function EmailVerification({ user }) {
             <div
               class="spinner-border text-primary "
               role="status"
-              // style={{ width: "100px", height: "100px" }}
             ></div>
           </div>
         ) : (

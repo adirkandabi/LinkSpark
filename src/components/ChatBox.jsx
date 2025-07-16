@@ -35,7 +35,7 @@ export default function ChatBox({ user }) {
 
     socket.emit("mark_as_read", { room: roomId, receiver: currentUserId });
 
-    // 🔔 Tell server to refresh unread count
+    //  Tell server to refresh unread count
     socket.emit("refresh_unread", currentUserId);
 
     return () => {
